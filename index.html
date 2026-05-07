@@ -17,8 +17,8 @@
         body, html {
             margin: 0; padding: 0; height: 100%; overflow: hidden;
             background-color: #008080;
-            /* RUTA LOCAL ABSOLUTA PARA EL FONDO */
-            background-image: url("file:///D:/05_PAGINA%20WEB/media/fondo%20windows.png");
+            /* RUTA RELATIVA DIRECTA AL ARCHIVO SUELTO */
+            background-image: url("./fondo%20windows.png");
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -101,7 +101,6 @@
         .prog-bar-container { background: #dfdfdf; box-shadow: inset 1px 1px #848484; height: 12px; position: relative; }
         .prog-bar-fill { background: #000080; height: 100%; transition: width 0.3s; }
 
-        /* Estilos específicos para Buscaminas */
         .ms-cell {
             width: 24px; height: 24px;
             background: #c0c0c0;
@@ -124,7 +123,6 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- ICONOS ---
         const IconFolder = ({ color = "#ffd700" }) => (
             <svg width="32" height="32" viewBox="0 0 32 32"><path d="M2 6H12L14 8H30V26H2V6Z" fill="#ffff00" stroke="black" /><path d="M3 9H29V25H3V9Z" fill={color} /></svg>
         );
@@ -138,7 +136,6 @@
             <svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" fill="#000080" stroke="black" /><circle cx="16" cy="16" r="8" fill="#c0c0c0" /><path d="M14 12V20L19 16L14 12Z" fill="#000080" /></svg>
         );
 
-        // --- COMPONENTES ---
         const MovableWindow = ({ id, title, content, isActive, onActivate, onClose, initialPos, width }) => {
             const [pos, setPos] = useState(initialPos || { x: 50, y: 50 });
             const [dragging, setDragging] = useState(false);
@@ -179,7 +176,6 @@
         );
 
         const AutoCAD = () => {
-            // Se actualiza el mensaje de inicio
             const [history, setHistory] = useState([
                 'Press Enter', 
                 'Comandos disponibles: about, skills, proyectos, contacto, random, cafe, clear.'
@@ -193,8 +189,7 @@
                 "Tengo hambre TODO el tiempo",
                 "Soy de Cordoba, Argentina. No digo ni \"che\" ni \"boludo\""
             ];
-
-            // Se actualiza el diccionario de comandos con los textos exactos
+            
             const commands = {
                 'help': "Comandos disponibles: about, skills, proyectos, contacto, random, cafe, clear.",
                 'about': "Arquitecta & Content Creator. Creativa y culo inquieto. Siempre aprendiendo cosas nuevas.",
@@ -212,14 +207,11 @@
                     const cmd = input.toLowerCase().trim();
                     
                     if (cmd === 'clear') {
-                        // Mantiene la funcionalidad de limpiar pantalla
                         setHistory([]);
                     } else if (commands[cmd]) {
-                        // Ejecuta el comando reconocido
                         const res = typeof commands[cmd] === 'function' ? commands[cmd]() : commands[cmd];
                         setHistory(prev => [...prev, `Command: ${input}`, res]);
                     } else if (cmd !== '') {
-                        // Manejo de comandos desconocidos
                         setHistory(prev => [...prev, `Command: ${input}`, "Comando desconocido. Escribe 'help' para ver las opciones."]);
                     }
                     
@@ -256,7 +248,6 @@
             </div>
         );
 
-        // --- BUSCAMINAS ---
         const Buscaminas = () => {
             const [grid, setGrid] = useState([]);
             const [gameOver, setGameOver] = useState(false);
@@ -275,16 +266,13 @@
                         minesPlaced++;
                     }
                 }
-                
                 for (let r = 0; r < rows; r++) {
                     for (let c = 0; c < cols; c++) {
                         if (!newGrid[r][c].isMine) {
                             let count = 0;
                             for (let i = -1; i <= 1; i++) {
                                 for (let j = -1; j <= 1; j++) {
-                                    if (r+i >= 0 && r+i < rows && c+j >= 0 && c+j < cols && newGrid[r+i][c+j].isMine) {
-                                        count++;
-                                    }
+                                    if (r+i >= 0 && r+i < rows && c+j >= 0 && c+j < cols && newGrid[r+i][c+j].isMine) count++;
                                 }
                             }
                             newGrid[r][c].neighborMines = count;
@@ -299,42 +287,27 @@
             const revealCell = (r, c) => {
                 if (gameOver || win || grid[r][c].isRevealed || grid[r][c].isFlagged) return;
                 let newGrid = [...grid.map(row => [...row])];
-                
                 if (newGrid[r][c].isMine) {
                     newGrid[r][c].isRevealed = true;
-                    setGrid(newGrid);
-                    setGameOver(true);
-                    return;
+                    setGrid(newGrid); setGameOver(true); return;
                 }
-
                 const stack = [[r, c]];
-                let revealedCount = 0;
-                
                 while (stack.length > 0) {
                     const [currR, currC] = stack.pop();
-                    if (!newGrid[currR][currC].isRevealed && !newGrid[currR][currC].isFlagged) {
+                    if (!newGrid[currR][currC].isRevealed) {
                         newGrid[currR][currC].isRevealed = true;
-                        revealedCount++;
                         if (newGrid[currR][currC].neighborMines === 0) {
                             for (let i = -1; i <= 1; i++) {
                                 for (let j = -1; j <= 1; j++) {
-                                    if (currR+i >= 0 && currR+i < rows && currC+j >= 0 && currC+j < cols) {
-                                        stack.push([currR+i, currC+j]);
-                                    }
+                                    if (currR+i >= 0 && currR+i < rows && currC+j >= 0 && currC+j < cols) stack.push([currR+i, currC+j]);
                                 }
                             }
                         }
                     }
                 }
                 setGrid(newGrid);
-                
-                // Check win
                 let hiddenSafe = 0;
-                for (let i=0; i<rows; i++) {
-                    for(let j=0; j<cols; j++) {
-                        if(!newGrid[i][j].isRevealed && !newGrid[i][j].isMine) hiddenSafe++;
-                    }
-                }
+                for (let i=0; i<rows; i++) for(let j=0; j<cols; j++) if(!newGrid[i][j].isRevealed && !newGrid[i][j].isMine) hiddenSafe++;
                 if(hiddenSafe === 0) setWin(true);
             };
 
@@ -343,8 +316,7 @@
                 if (gameOver || win || grid[r][c].isRevealed) return;
                 let newGrid = [...grid.map(row => [...row])];
                 newGrid[r][c].isFlagged = !newGrid[r][c].isFlagged;
-                setGrid(newGrid);
-                setMinesLeft(minesLeft + (newGrid[r][c].isFlagged ? -1 : 1));
+                setGrid(newGrid); setMinesLeft(minesLeft + (newGrid[r][c].isFlagged ? -1 : 1));
             };
 
             const colors = ['#0000ff', '#008000', '#ff0000', '#000080', '#800000', '#008080', '#000000', '#808080'];
@@ -353,22 +325,14 @@
                 <div className="flex flex-col items-center p-2 bg-[#c0c0c0]">
                     <div className="flex justify-between items-center w-full bg-[#c0c0c0] border-[2px] border-[#848484] border-t-[#848484] border-l-[#848484] border-r-[#fff] border-b-[#fff] p-1 mb-2 shadow-inner">
                         <div className="bg-black text-red-500 font-mono text-xl px-1 border-2 border-[#848484] border-b-[#fff] border-r-[#fff] min-w-[40px] text-center">{minesLeft.toString().padStart(3, '0')}</div>
-                        <button className="win98-btn w-8 h-8 flex items-center justify-center text-xl" onClick={initGame}>
-                            {gameOver ? '😵' : win ? '😎' : '🙂'}
-                        </button>
+                        <button className="win98-btn w-8 h-8 flex items-center justify-center text-xl" onClick={initGame}>{gameOver ? '😵' : win ? '😎' : '🙂'}</button>
                         <div className="bg-black text-red-500 font-mono text-xl px-1 border-2 border-[#848484] border-b-[#fff] border-r-[#fff] min-w-[40px] text-center">000</div>
                     </div>
                     <div className="border-[3px] border-[#848484] border-b-[#fff] border-r-[#fff] bg-[#c0c0c0]">
                         {grid.map((row, r) => (
                             <div key={r} className="flex">
                                 {row.map((cell, c) => (
-                                    <div 
-                                        key={`${r}-${c}`} 
-                                        className={`ms-cell ${cell.isRevealed ? 'revealed' : ''} ${(gameOver && cell.isMine && !cell.isFlagged) ? 'revealed' : ''}`}
-                                        onClick={() => revealCell(r, c)}
-                                        onContextMenu={(e) => toggleFlag(e, r, c)}
-                                        style={{ color: cell.isRevealed && cell.neighborMines > 0 ? colors[cell.neighborMines - 1] : 'black' }}
-                                    >
+                                    <div key={`${r}-${c}`} className={`ms-cell ${cell.isRevealed ? 'revealed' : ''} ${(gameOver && cell.isMine && !cell.isFlagged) ? 'revealed' : ''}`} onClick={() => revealCell(r, c)} onContextMenu={(e) => toggleFlag(e, r, c)} style={{ color: cell.isRevealed && cell.neighborMines > 0 ? colors[cell.neighborMines - 1] : 'black' }}>
                                         {(cell.isRevealed || (gameOver && cell.isMine)) && cell.isMine ? '💣' : ''}
                                         {cell.isRevealed && !cell.isMine && cell.neighborMines > 0 ? cell.neighborMines : ''}
                                         {!cell.isRevealed && cell.isFlagged ? '🚩' : ''}
@@ -393,47 +357,33 @@
                 const ctx = canvas.getContext('2d');
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
-                // RUTA LOCAL PARA EL BOCETO DEL PAINT
-                img.src = "./media/boceto escenario.jpg";
+                // RUTA RELATIVA DIRECTA
+                img.src = "./boceto%20escenario.jpg";
                 
                 img.onload = () => {
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 };
             };
 
-            useEffect(() => {
-                loadBackground();
-            }, []);
+            useEffect(() => { loadBackground(); }, []);
 
             const startDrawing = ({ nativeEvent }) => {
                 const { offsetX, offsetY } = nativeEvent;
                 const ctx = canvasRef.current.getContext('2d');
-                ctx.beginPath();
-                ctx.moveTo(offsetX, offsetY);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = brushSize;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                setIsDrawing(true);
+                ctx.beginPath(); ctx.moveTo(offsetX, offsetY); ctx.strokeStyle = color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; setIsDrawing(true);
             };
 
             const draw = ({ nativeEvent }) => {
                 if (!isDrawing) return;
                 const { offsetX, offsetY } = nativeEvent;
                 const ctx = canvasRef.current.getContext('2d');
-                ctx.lineTo(offsetX, offsetY);
-                ctx.stroke();
-            };
-
-            const stopDrawing = () => {
-                setIsDrawing(false);
+                ctx.lineTo(offsetX, offsetY); ctx.stroke();
             };
 
             const clearCanvas = () => {
                 const canvas = canvasRef.current;
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                // Vuelve a cargar el boceto tras limpiar
                 loadBackground();
             };
 
@@ -441,51 +391,27 @@
 
             return (
                 <div className="flex flex-col h-[450px] bg-[#c0c0c0]">
-                    <div className="flex gap-3 px-2 py-1 text-[11px] border-b border-white">
-                        <span><u>A</u>rchivo</span><span><u>E</u>dición</span><span><u>V</u>er</span><span>I<u>m</u>agen</span><span><u>O</u>pciones</span><span>A<u>y</u>uda</span>
-                    </div>
-                    
+                    <div className="flex gap-3 px-2 py-1 text-[11px] border-b border-white"><span><u>A</u>rchivo</span><span><u>E</u>dición</span><span><u>V</u>er</span><span>I<u>m</u>agen</span><span><u>O</u>pciones</span><span>A<u>y</u>uda</span></div>
                     <div className="flex flex-1 overflow-hidden m-1 gap-1">
                         <div className="w-14 shrink-0 flex flex-col gap-1">
                             <div className="grid grid-cols-2 gap-[2px] bg-[#c0c0c0] p-1 border-t-2 border-l-2 border-white border-r-2 border-b-2 border-gray-600 shadow-sm">
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs">✏️</button>
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs bg-gray-300 shadow-inner">🖌️</button>
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs">🪣</button>
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs">🧽</button>
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs">A</button>
-                                <button className="win98-btn h-6 flex items-center justify-center text-xs">🔍</button>
+                                <button className="win98-btn h-6 flex items-center justify-center text-xs">✏️</button><button className="win98-btn h-6 flex items-center justify-center text-xs bg-gray-300 shadow-inner">🖌️</button>
+                                <button className="win98-btn h-6 flex items-center justify-center text-xs">🪣</button><button className="win98-btn h-6 flex items-center justify-center text-xs">🧽</button>
+                                <button className="win98-btn h-6 flex items-center justify-center text-xs">A</button><button className="win98-btn h-6 flex items-center justify-center text-xs">🔍</button>
                             </div>
                             <button className="win98-btn px-1 py-2 text-[9px] font-bold mt-auto border-2 border-gray-500 leading-tight" onClick={clearCanvas}>Limpiar<br/>Lienzo</button>
                         </div>
-
                         <div className="flex-1 bg-white border-2 border-gray-600 shadow-inner cursor-crosshair overflow-hidden relative">
-                            <canvas 
-                                ref={canvasRef} 
-                                width={600} 
-                                height={400} 
-                                onMouseDown={startDrawing} 
-                                onMouseMove={draw} 
-                                onMouseUp={stopDrawing} 
-                                onMouseLeave={stopDrawing}
-                                className="w-full h-full touch-none"
-                            />
+                            <canvas ref={canvasRef} width={600} height={400} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={() => setIsDrawing(false)} onMouseLeave={() => setIsDrawing(false)} className="w-full h-full touch-none" />
                         </div>
                     </div>
-
                     <div className="h-12 flex items-center p-1 gap-2 border-t-2 border-white bg-[#c0c0c0]">
                         <div className="w-8 h-8 border-2 border-gray-600 shadow-inner bg-white relative shrink-0">
                             <div className="absolute top-1 left-1 w-4 h-4 border border-gray-500 z-10" style={{backgroundColor: color}}></div>
                             <div className="absolute bottom-1 right-1 w-4 h-4 border border-gray-500 bg-white"></div>
                         </div>
                         <div className="flex flex-wrap gap-[2px] h-8 max-w-[150px] border-2 border-gray-600 p-[1px] shadow-inner bg-[#c0c0c0]">
-                            {colors.map(c => (
-                                <button 
-                                    key={c} 
-                                    className={`w-[14px] h-[14px] border border-gray-400 ${color === c ? 'border-black border-2 shadow-inner' : 'hover:border-white'}`} 
-                                    style={{ backgroundColor: c }}
-                                    onClick={() => setColor(c)}
-                                ></button>
-                            ))}
+                            {colors.map(c => (<button key={c} className={`w-[14px] h-[14px] border border-gray-400 ${color === c ? 'border-black border-2 shadow-inner' : 'hover:border-white'}`} style={{ backgroundColor: c }} onClick={() => setColor(c)}></button>))}
                         </div>
                     </div>
                 </div>
@@ -497,7 +423,6 @@
             const endRef = useRef(null);
             
             useEffect(() => {
-                // Secuencia inicial con barra de progreso solicitada
                 const initialSequence = [
                     "C:\\WINDOWS\\SYSTEM32> Iniciar volcado de memoria de diseño...",
                     "> Comando: REGENERAR_CREATIVIDAD... OK.",
@@ -505,22 +430,14 @@
                     { type: 'progress', text: "> Renderizando atmósfera sonora para [Proyecto]...", progress: 0 },
                     "> Aviso: La escala de la idea supera el presupuesto. Optimizando recursos sin perder estética."
                 ];
-
-                let delay = 0;
                 
                 setTimeout(() => setLogs(prev => [...prev, initialSequence[0]]), 300);
                 setTimeout(() => setLogs(prev => [...prev, initialSequence[1]]), 1500);
                 setTimeout(() => setLogs(prev => [...prev, initialSequence[2]]), 3000);
-                setTimeout(() => setLogs(prev => [...prev, initialSequence[3]]), 5000); // Aparece la barra
-                
-                // Anima la barra al 100%
-                setTimeout(() => {
-                    setLogs(prev => prev.map(l => l.type === 'progress' ? { ...l, progress: 100 } : l));
-                }, 6500);
-
+                setTimeout(() => setLogs(prev => [...prev, initialSequence[3]]), 5000);
+                setTimeout(() => setLogs(prev => prev.map(l => l.type === 'progress' ? { ...l, progress: 100 } : l)), 6500);
                 setTimeout(() => setLogs(prev => [...prev, initialSequence[4]]), 8000);
 
-                // Pensamientos aleatorios que entran después
                 const thoughts = [
                     "WARNING: Nivel de cafeína críticamente bajo.",
                     "ERROR: El cliente pidió el logo más grande.",
@@ -535,7 +452,7 @@
                 const interval = setInterval(() => {
                     const newLog = thoughts[Math.floor(Math.random() * thoughts.length)];
                     setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${newLog}`]);
-                }, 10000); // Comienza a tirar logs tras la secuencia inicial
+                }, 10000); 
 
                 return () => clearInterval(interval);
             }, []);
@@ -547,26 +464,20 @@
             return (
                 <div className="h-[300px] bg-black text-[#00ff00] font-mono text-[10px] p-3 overflow-y-auto shadow-inner">
                     {logs.map((l, i) => {
-                        if (typeof l === 'string') {
-                            return <div key={i} className="mb-2">{l}</div>;
-                        } else if (l.type === 'progress') {
-                            return (
-                                <div key={i} className="mb-2 w-full mt-2">
-                                    <div>{l.text}</div>
-                                    <div className="w-full bg-gray-800 h-3 mt-1 border border-gray-600 p-[1px]">
-                                        <div className="bg-[#00ff00] h-full transition-all duration-1000" style={{ width: `${l.progress}%` }}></div>
-                                    </div>
-                                    <div className="text-right mt-1 opacity-80">{l.progress}% completo.</div>
-                                </div>
-                            );
-                        }
+                        if (typeof l === 'string') return <div key={i} className="mb-2">{l}</div>;
+                        else if (l.type === 'progress') return (
+                            <div key={i} className="mb-2 w-full mt-2">
+                                <div>{l.text}</div>
+                                <div className="w-full bg-gray-800 h-3 mt-1 border border-gray-600 p-[1px]"><div className="bg-[#00ff00] h-full transition-all duration-1000" style={{ width: `${l.progress}%` }}></div></div>
+                                <div className="text-right mt-1 opacity-80">{l.progress}% completo.</div>
+                            </div>
+                        );
                     })}
                     <div ref={endRef}></div>
                 </div>
             );
         };
 
-        // --- APP PRINCIPAL ---
         function App() {
             const [windows, setWindows] = useState([]); 
             const [activeId, setActiveId] = useState(null); 
@@ -582,14 +493,7 @@
                     "ERROR 404: Inspiración no encontrada. Por favor, reinicie el sistema."
                 ];
                 const msg = dilemmas[Math.floor(Math.random() * dilemmas.length)];
-                
-                try {
-                    const audio = new Audio('https://www.myinstants.com/media/sounds/erro.mp3');
-                    audio.play();
-                } catch(e) {
-                    console.log("Audio error", e);
-                }
-                
+                try { const audio = new Audio('https://www.myinstants.com/media/sounds/erro.mp3'); audio.play(); } catch(e) {}
                 setAlertMsg(msg);
             };
 
@@ -597,10 +501,7 @@
                 if (windows.find(w => w.id === item.id)) { setActiveId(item.id); return; }
                 let content, width = '450px', title = item.title;
 
-                if (item.id === 'f_alert') {
-                    triggerAlert();
-                    return;
-                }
+                if (item.id === 'f_alert') { triggerAlert(); return; }
                 else if (item.id === 'paint') { content = <PaintApp />; width = "600px"; }
                 else if (item.id === 'syslog') { content = <SystemLog />; width = "450px"; }
                 else if (item.id === 'buscaminas') { content = <Buscaminas />; width = "260px"; }
@@ -614,69 +515,43 @@
                     );
                     width = "500px";
                 }
-                else if (item.id === 'f_trash') {
-                    content = <FolderView items={[]} onOpen={openWin} />;
-                    width = "500px";
-                }
+                else if (item.id === 'f_trash') { content = <FolderView items={[]} onOpen={openWin} />; width = "500px"; }
                 else if (item.id === 'f_cimientos') {
                     content = <FolderView items={[
-                        { id: 'p_carmen_id', title: 'Carmen_Lillo_identidad.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/Carmen%20Lillo_identidad%20visual.pdf' },
-                        { id: 'p_metal_id', title: 'IDEAS_METALMADFEST.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/IDEAS%20METALMADFEST.pdf' },
-                        { id: 'p_viper_epk', title: 'LADY_VIPER_EPK.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/LADY%20VIPER_EPK.pdf' },
-                        { id: 'p_vsg_doc', title: 'VIAJANDO_SIN_GUION.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/VIAJANDO%20SIN%20GUION.pdf' },
-                        { id: 'v_vsg_vid', title: 'VIAJANDO_SIN_GUION.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/VIAJANDO%20SIN%20GUION.mp4', icon: <IconMP4 /> }
-                    ]} onOpen={openWin} />;
-                    width = "550px";
+                        { id: 'p_carmen_id', title: 'Carmen_Lillo_identidad.pdf', type: 'pdf', src: './Carmen%20Lillo_identidad%20visual.pdf' },
+                        { id: 'p_metal_id', title: 'IDEAS_METALMADFEST.pdf', type: 'pdf', src: './IDEAS%20METALMADFEST.pdf' },
+                        { id: 'p_viper_epk', title: 'LADY_VIPER_EPK.pdf', type: 'pdf', src: './LADY%20VIPER_EPK.pdf' },
+                        { id: 'p_vsg_doc', title: 'VIAJANDO_SIN_GUION.pdf', type: 'pdf', src: './VIAJANDO%20SIN%20GUION.pdf' }
+                    ]} onOpen={openWin} />; width = "550px";
                 } 
                 else if (item.id === 'f_estructura') {
                     content = <FolderView items={[
-                        { id: 'p_mapa_remix', title: 'MAPA_STUDIOS_REMIX.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/MAPA%20STUDIOS%20REMIX_FINAL.pdf' },
-                        { id: 'p_oatly_v32', title: 'Oatly_V32_ESTE_SI.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/Oatly%20V32_ESTE%20SI.pdf' },
-                        { id: 'v_oatly_reel', title: 'OATLY_REEL_PRUEBA.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/OATLY%20REEL%20PRUEBA.mp4', icon: <IconMP4 /> },
-                        { id: 'p_oddliquor', title: 'ODDLIQUOR_JOYESLAVA.pdf', type: 'pdf', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/ODDLIQUOR_JOYESLAVA.pdf' }
-                    ]} onOpen={openWin} />;
-                    width = "550px";
+                        { id: 'p_mapa_remix', title: 'MAPA_STUDIOS_REMIX.pdf', type: 'pdf', src: './MAPA%20STUDIOS%20REMIX_FINAL.pdf' },
+                        { id: 'p_oatly_v32', title: 'Oatly_V32_ESTE_SI.pdf', type: 'pdf', src: './Oatly%20V32_ESTE%20SI.pdf' },
+                        { id: 'v_oatly_reel', title: 'OATLY_REEL_PRUEBA.mp4', type: 'video', src: './OATLY%20REEL%20PRUEBA.mp4', icon: <IconMP4 /> },
+                        { id: 'p_oddliquor', title: 'ODDLIQUOR_JOYESLAVA.pdf', type: 'pdf', src: './ODDLIQUOR_JOYESLAVA.pdf' }
+                    ]} onOpen={openWin} />; width = "550px";
                 }
                 else if (item.id === 'f_instalaciones') {
                     content = <FolderView items={[
-                        { id: 'v_carmen_charm', title: 'Carmen_Lillo_Charm.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/Carmen%20Lillo_Charm.mp4', icon: <IconMP4 /> },
-                        { id: 'v_metal_fest', title: 'METALMAD_FEST.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/METALMAD%20FEST.mp4', icon: <IconMP4 /> },
-                        { id: 'v_mapa_riv', title: 'mapa_estudios_riverland.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/mapa%20estudios%20+%20riverland.mp4', icon: <IconMP4 /> },
-                        { id: 'v_santa_riv', title: 'Santamarta_Riverland.mp4', type: 'video', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/Santamarta_Riverland.mp4', icon: <IconMP4 /> }
-                    ]} onOpen={openWin} />;
-                    width = "550px";
+                        { id: 'v_carmen_charm', title: 'Carmen_Lillo_Charm.mp4', type: 'video', src: './Carmen%20Lillo_Charm.mp4', icon: <IconMP4 /> },
+                        { id: 'v_metal_fest', title: 'METALMAD_FEST.mp4', type: 'video', src: './METALMAD%20FEST.mp4', icon: <IconMP4 /> },
+                        { id: 'v_mapa_riv', title: 'mapa_estudios_riverland.mp4', type: 'video', src: './mapa%20estudios%20+%20riverland.mp4', icon: <IconMP4 /> },
+                        { id: 'v_santa_riv', title: 'Santamarta_Riverland.mp4', type: 'video', src: './Santamarta_Riverland.mp4', icon: <IconMP4 /> }
+                    ]} onOpen={openWin} />; width = "550px";
                 }
                 else if (item.id === 'f_pm') {
                     content = <Notepad text={`GESTIÓN DE PROYECTOS TRANSVERSAL\n\nMi experiencia gestionando proyectos de arquitectura. Sé hacer cosas bonitas, pero también sé manejar presupuestos, proveedores y fechas de entrega sin entrar en pánico.`} />;
                 }
                 else if (item.id === 'manifiesto') {
-                    content = <Notepad text={`MANIFIESTO\n\nHABITAR EL CAMBIO
-
-
-Yo no estudie publicidad pero si te pones a pensar, realmente Le Corbusier no estudió arquitectura...
-
-Empecé mi carrera entre planos y estructuras. Pero en el camino entendí que lo que más me fascina no es el edificio terminado, sino el proceso de habitar el espacio que hay entre las ideas.  
-
-Hace un tiempo decidí aplicar mi propia "demolición controlada": dejé la seguridad de un trabajo estable para invertir en lo que realmente me mueve: Creatividad.
-
-Me reconvertí no porque estuviera perdida, sino porque soy una inquieta crónica. Entendí que la arquitectura no es solo levantar muros, es diseñar sistemas, narrativas y experiencias, ya sea en un camión en el Riverland o en unos visuales para la Joy Eslava.  
-
-Mi stack personal es híbrido:
-
-Arquitectura: Me dio el rigor técnico, el criterio estético, la gestión de presupuestos y la capacidad de no entrar en pánico ante una entrega.  
-
-Creadora por instinto: Desde siempre fui la amiga plasta que quiere que hagamos un video para los 15 años de alguna del grupo, la que planificaba los actos y quería coreaografiar los bailes. Si tenia que hacer un proyecto para Musica o Arte, lo daba TODO.  
-
-Aprendiz por vocación: Invertir en mi formación en CANELA fue el giro que mi vida necesitaba para entender que el diseño, como la vida, es un Work In Progress constante.  
-
-Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la belleza en las contradicciones. `} />;
+                    content = <Notepad text={`MANIFIESTO\n\nHABITAR EL CAMBIO\n\nYo no estudie publicidad pero si te pones a pensar, realmente Le Corbusier no estudió arquitectura...\n\nEmpecé mi carrera entre planos y estructuras. Pero en el camino entendí que lo que más me fascina no es el edificio terminado, sino el proceso de habitar el espacio que hay entre las ideas.\n\nHace un tiempo decidí aplicar mi propia "demolición controlada": dejé la seguridad de un trabajo estable para invertir en lo que realmente me mueve: Creatividad.\n\nMe reconvertí no porque estuviera perdida, sino porque soy una inquieta crónica. Entendí que la arquitectura no es solo levantar muros, es diseñar sistemas, narrativas y experiencias, ya sea en un camión en el Riverland o en unos visuales para la Joy Eslava.\n\nMi stack personal es híbrido:\n\nArquitectura: Me dio el rigor técnico, el criterio estético, la gestión de presupuestos y la capacidad de no entrar en pánico ante una entrega.\n\nCreadora por instinto: Desde siempre fui la amiga plasta que quiere que hagamos un video para los 15 años de alguna del grupo, la que planificaba los actos y quería coreaografiar los bailes. Si tenia que hacer un proyecto para Musica o Arte, lo daba TODO.\n\nAprendiz por vocación: Invertir en mi formación en CANELA fue el giro que mi vida necesitaba para entender que el diseño, como la vida, es un Work In Progress constante.\n\nSoy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la belleza en las contradicciones.`} />;
                 }
                 else if (item.type === 'pdf') { content = <iframe src={item.src} className="w-full h-[650px]" frameBorder="0"></iframe>; width = '750px'; }
                 else if (item.type === 'video') { 
                     content = (
                         <div className="bg-black p-1 flex justify-center">
                             <video controls autoPlay className="w-full max-h-[400px]">
-                                {/* RUTA LOCAL ABSOLUTA PARA EL VIDEO */}
+                                {/* RUTA RELATIVA PARA EL VIDEO */}
                                 <source src={item.src} type="video/mp4" />
                                 Tu navegador no soporta video.
                             </video>
@@ -696,7 +571,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
             const closeWin = (id) => { setWindows(windows.filter(w => w.id !== id)); if (activeId === id) setActiveId(null); };
 
             useEffect(() => { 
-                // APERTURA INICIAL AUTOMÁTICA
                 openWin({ id: 'f_alert', title: 'Dilemas.exe', type: 'app' }); 
                 openWin({ id: 'syslog', title: 'System_Log.exe', type: 'app' }); 
             }, []);
@@ -705,18 +579,18 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                 { id: 'f_pc', title: 'Mi PC', icon: <div className="text-4xl">💻</div>, x: 40, y: 30 },
                 { id: 'f_trash', title: 'Papelera', icon: <div className="text-4xl">🗑️</div>, x: 40, y: 150 },
                 { id: 'f_ie', title: 'Internet Explorer', icon: <div className="text-4xl">🌐</div>, x: 40, y: 280 },
-                { id: 'f_cimientos', title: 'CIMIENTOS', icon: <IconFolder color="#3b82f6" />, x: 200, y: 80 },
-                { id: 'f_estructura', title: 'ESTRUCTURA', icon: <IconFolder color="#10b981" />, x: 150, y: 400 },
-                { id: 'f_instalaciones', title: 'INSTALACIONES', icon: <IconFolder color="#ec4899" />, x: 250, y: 200 },
-                { id: 'f_pm', title: 'PROJECT MGMT', icon: <IconFolder color="#f59e0b" />, x: 450, y: 50 },
+                { id: 'f_cimientos', title: 'LOS CIMIENTOS', icon: <IconFolder color="#3b82f6" />, x: 200, y: 80 },
+                { id: 'f_estructura', title: 'LA ESTRUCTURA', icon: <IconFolder color="#10b981" />, x: 150, y: 400 },
+                { id: 'f_instalaciones', title: 'INSTALACIONES', icon: <IconFolder color="#ec4899" />, x: 350, y: 200 },
+                { id: 'f_pm', title: 'PROJECT MGMT', icon: <IconFolder color="#f59e0b" />, x: 500, y: 50 },
                 { id: 'manifiesto', title: 'Manifiesto.txt', icon: <IconTXT />, x: 480, y: 350 },
                 { id: 'acad', title: 'AutoCAD.exe', icon: <img src="https://drive.google.com/thumbnail?id=1ppXe5M8uk-1dQfWkLY9-GwF-vKxmzTYe&sz=w100" className="w-11 h-11 object-contain drop-shadow-[1px_1px_1px_rgba(0,0,0,0.8)]" alt="AutoCAD" />, x: 650, y: 120 },
                 { id: 'paint', title: 'Paint.exe', icon: <div className="text-4xl">🎨</div>, x: 780, y: 30 },
                 { id: 'syslog', title: 'System_Log.exe', icon: <div className="text-4xl">🖧</div>, x: 600, y: 450 },
                 { id: 'f_alert', title: 'Dilemas.exe', icon: <div className="text-4xl">⚠️</div>, x: 820, y: 400 },
-                { id: 'buscaminas', title: 'Buscaminas.exe', icon: <div className="text-4xl">💣</div>, x: 100, y: 550 },
-                { id: 'img_quien', title: 'QUIEN_ES_LUCIA.png', src: 'file:///D:/05_PAGINA%20WEB/media/PROYECTOS/QUIEN%20ES%20LUCIA.png', type:'img', icon: <div className="text-4xl">🖼️</div>, x: 400, y: 250 },
-                { id: 'vid_arq', title: 'arquitecta_se_ofrece.mp4', src: 'file:///D:/05_PAGINA%20WEB/media/arquitecta%20se%20ofrece.mp4', type: 'video', icon: <IconMP4 />, x: 720, y: 250 }
+                { id: 'buscaminas', title: 'Buscaminas.exe', icon: <div className="text-4xl">💣</div>, x: 220, y: 550 },
+                { id: 'img_quien', title: 'QUIEN_ES_LUCIA.png', src: './QUIEN%20ES%20LUCIA.png', type:'img', icon: <div className="text-4xl">🖼️</div>, x: 400, y: 280 },
+                { id: 'vid_arq', title: 'arquitecta_se_ofrece.mp4', src: './arquitecta%20se%20ofrece.mp4', type: 'video', icon: <IconMP4 />, x: 720, y: 550 }
             ], []);
 
             return (
@@ -737,8 +611,8 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                                 <img src="https://drive.google.com/thumbnail?id=1G8YoD3zGwTxS5n-SGWKDmHQwcKz4Q8rU&sz=w400" className="w-full h-full object-cover" />
                             </div>
                             <div className="text-[10px] font-bold text-center truncate mb-2 text-black">Parásito - Lady Viper</div>
-                            {/* RUTA LOCAL ABSOLUTA PARA EL AUDIO */}
-                            <audio controls src="file:///D:/05_PAGINA%20WEB/media/Parasito_LadyViper.mp3" className="w-full h-8 scale-90 origin-center"></audio>
+                            {/* RUTA RELATIVA PARA EL AUDIO */}
+                            <audio controls src="./Parasito_LadyViper.wav" className="w-full h-8 scale-90 origin-center"></audio>
                         </div>
 
                         <div className="flex flex-col gap-1">
@@ -752,7 +626,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
 
                     {windows.map(w => ( <MovableWindow key={w.id} {...w} isActive={activeId === w.id} onActivate={setActiveId} onClose={closeWin} /> ))}
 
-                    {/* OVERLAY DE ALERTAS DE SISTEMA */}
                     {alertMsg && (
                         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20 pointer-events-auto">
                             <div className="win98-window w-80 flex flex-col shadow-2xl border-2 border-white">
@@ -772,7 +645,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                         </div>
                     )}
 
-                    {/* MENÚ DE INICIO REMODELADO COMO LISTA DE WINDOWS */}
                     {isStartOpen && (
                         <div className="start-menu win98-window flex shadow-2xl pb-1 pr-1">
                             <div className="start-menu-sidebar text-sm font-sans tracking-widest pl-1 shadow-[inset_-1px_0_rgba(0,0,0,0.5)]">
@@ -780,7 +652,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                             </div>
                             <div className="flex-1 bg-[#c0c0c0] flex flex-col text-black font-sans shadow-[inset_1px_1px_white]">
                                 
-                                {/* SECCIÓN PROGRAMAS PRINCIPALES */}
                                 <div className="py-1">
                                     <div className="px-2 py-[6px] hover:bg-[#000080] hover:text-white cursor-pointer text-[11px] flex items-center gap-3 group" 
                                          onClick={() => {openWin({id: 'acad', title: 'AutoCAD.exe', type: 'app'}); setIsStartOpen(false);}}>
@@ -806,7 +677,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
 
                                 <div className="h-px bg-[#848484] mx-1 border-b border-white my-1"></div>
                                 
-                                {/* SECCIÓN STACK TECNOLÓGICO */}
                                 <div className="py-1">
                                     <div className="px-2 py-1 text-[11px] flex items-center justify-between cursor-default group relative text-gray-800 font-bold">
                                         <div className="flex items-center gap-3">
@@ -816,7 +686,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                                         <span className="text-[8px]">▶</span>
                                     </div>
                                     
-                                    {/* Sub-items que simulan los programas instalados */}
                                     <div className="pl-12 py-[4px] hover:bg-[#000080] hover:text-white cursor-default text-[10px] flex items-center gap-2">
                                         <div className="w-4 h-4 bg-blue-600 text-cyan-200 border border-blue-800 flex items-center justify-center font-bold text-[8px] rounded-sm shadow-sm">Ps</div> 
                                         Adobe Photoshop
@@ -837,7 +706,6 @@ Soy Lucía. Arquitecta reconvertida, creadora inquieta y experta en encontrar la
                                 
                                 <div className="h-px bg-[#848484] mx-1 border-b border-white my-1 mt-auto"></div>
                                 
-                                {/* SECCIÓN CONTACTO */}
                                 <div className="py-1 pb-2">
                                     <div className="px-2 py-[6px] hover:bg-[#000080] hover:text-white cursor-pointer text-[11px] flex items-center gap-3" 
                                          onClick={() => {window.open('mailto:luciaisabelpagan@gmail.com'); setIsStartOpen(false);}}>
